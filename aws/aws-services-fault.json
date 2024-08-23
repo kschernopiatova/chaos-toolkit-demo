@@ -1,0 +1,113 @@
+{
+    "title": "AWS fault scenario",
+    "description": "Check the system status with RDS, EKS and elasticache failures",
+    "tags": [
+        "aws",
+        "kubernetes"
+    ],
+    "configuration": {
+        "aws_region": "us-east-1"
+    },
+    "steady-state-hypothesis": {
+        "title": "Verifying aws srvices' status",
+        "probes": [
+            {
+                "name": "nodes-must-be-healthy",
+                "type": "probe",
+                "tolerance": true,
+                "provider": {
+                    "type": "python",
+                    "module": "chaosk8s.node.probes",
+                    "func": "nodes_must_be_healthy"
+                }
+            },
+            {
+                "name": "get-cache-node-status",
+                "type": "probe",
+                "tolerance": "available",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.elasticache.probes",
+                    "func": "get_cache_node_status",
+                    "arguments": {
+                        "cluster_id": "$cluster_id"
+                    }
+                }
+            },
+            {
+                "name": "cluster-status",
+                "type": "probe",
+                "tolerance": "ready",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.rds.probes",
+                    "func": "cluster_status",
+                    "arguments": {
+                        "cluster_id": "$db_cluster_identifier"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "reboot-db-instance",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.rds.actions",
+                "func": "reboot_db_instance",
+                "arguments": {
+                    "db_instance_identifier": "$db_instance_identifier",
+                    "force_failover": false
+                }
+            }
+        },
+        {
+            "name": "reboot-cache-clusters",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.elasticache.actions",
+                "func": "reboot_cache_clusters",
+                "arguments": {
+                    "cluster_ids": [
+                        "$cluster_id"
+                    ]
+                }
+            },
+            "pauses": {
+                "after": 60
+            }
+        },
+        {
+            "name": "cordon-nodes",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.node.actions",
+                "func": "cordon_node",
+                "arguments": {
+                    "name": "$node_name"
+                }
+            },
+            "pauses": {
+                "after": 30
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "name": "uncordon-node",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.node.actions",
+                "func": "uncordon_node",
+                "arguments": {
+                    "name": "$node_name"
+                }
+            }
+        }
+    ]
+}
