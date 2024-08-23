@@ -1,0 +1,45 @@
+{
+    "title": "Stop rds cluster",
+    "description": "Check the state after RDS DB cluster is stopped",
+    "tags": [
+        "aws"
+    ],
+    "configuration": {
+        "aws_region": "us-east-1"
+    },
+    "steady-state-hypothesis": {
+        "title": "Check cluster status",
+        "probes": [
+            {
+                "name": "cluster-status",
+                "type": "probe",
+                "tolerance": "ready",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.rds.probes",
+                    "func": "cluster_status",
+                    "arguments": {
+                        "cluster_id": "$db_cluster_identifier"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "stop-db-cluster",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.rds.actions",
+                "func": "stop_db_cluster",
+                "arguments": {
+                    "db_cluster_identifier": "$db_cluster_identifier"
+                }
+            },
+            "pauses": {
+                "after": 5
+            }
+        }
+    ]
+}

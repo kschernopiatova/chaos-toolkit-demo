@@ -1,0 +1,71 @@
+{
+    "title": "Stress network",
+    "description": "We expect Kubernetes to handle the situation gracefully when packets are lost",
+    "tags": [
+        "kubernetes"
+    ],
+    "steady-state-hypothesis": {
+        "title": "Verifying node is healthy",
+        "probes": [
+            {
+                "name": "nodes-must-be-healthy",
+                "type": "probe",
+                "tolerance": true,
+                "provider": {
+                    "type": "python",
+                    "module": "chaosk8s.node.probes",
+                    "func": "nodes_must_be_healthy"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "add-packet-loss",
+            "type": "action",
+            "provider": {
+              "type": "python",
+              "module": "chaosk8s.chaosmesh.network.actions",
+              "func": "set_loss",
+              "arguments": {
+                "name": "loss-stressor",
+                "ns": "app",
+                "loss": "50",
+                "direction": "both",
+                "mode": "all",
+                "target_mode": "all"
+              }
+            },
+            "pauses": {
+                "after": 60
+            }
+        },
+        {
+            "name": "get-network-faults",
+            "type": "probe",
+            "provider": {
+              "type": "python",
+              "module": "chaosk8s.chaosmesh.network.probes",
+              "func": "get_network_faults",
+              "arguments": {
+                "ns": "app"
+              }
+            }
+          }
+    ],
+    "rollbacks": [
+        {
+            "name": "delete-network-fault",
+            "type": "action",
+            "provider": {
+              "type": "python",
+              "module": "chaosk8s.chaosmesh.network.actions",
+              "func": "delete_network_fault",
+              "arguments": {
+                "name": "loss-stressor",
+                "ns": "app"
+              }
+            }
+          }
+    ]
+}

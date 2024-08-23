@@ -1,0 +1,46 @@
+{
+    "title": "Test elasticache cluster failover",
+    "description": "Check the state after elasticache cluster failover",
+    "tags": [
+        "aws"
+    ],
+    "configuration": {
+        "aws_region": "us-east-1"
+    },
+    "steady-state-hypothesis": {
+        "title": "Verifying node is healthy",
+        "probes": [
+            {
+                "name": "get-cache-node-status",
+                "type": "probe",
+                "tolerance": "available",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.elasticache.probes",
+                    "func": "get_cache_node_status",
+                    "arguments": {
+                        "cluster_id": "$cluster_id"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "test-failover",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.elasticache.actions",
+                "func": "test_failover",
+                "arguments": {
+                    "replication_group_id": "$replication_group_id",
+                    "node_group_id": "$replication_group_id"
+                }
+            },
+            "pauses": {
+                "after": 5
+            }
+        }
+    ]
+}

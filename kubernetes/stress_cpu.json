@@ -1,0 +1,60 @@
+{
+    "title": "Stress CPU",
+    "description": "We expect Kubernetes to handle the situation gracefully when some pods are under cpu pressure",
+    "tags": [
+        "kubernetes"
+    ],
+    "steady-state-hypothesis": {
+        "title": "Verifying node is healthy",
+        "probes": [
+            {
+                "name": "nodes-must-be-healthy",
+                "type": "probe",
+                "tolerance": true,
+                "provider": {
+                    "type": "python",
+                    "module": "chaosk8s.node.probes",
+                    "func": "nodes_must_be_healthy"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "stress-cpu",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.chaosmesh.stress.actions",
+                "func": "stress_cpu",
+                "arguments": {
+                    "name": "cpu-stressor",
+                    "workers": 2,
+                    "load": 40,
+                    "ns": "app",
+                    "mode": "fixed-percent",
+                    "mode_value": "20",
+                    "duration": "1m"
+                }
+            },
+            "pauses": {
+                "after": 60
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "name": "delete-stressor",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.chaosmesh.stress.actions",
+                "func": "delete_stressor",
+                "arguments": {
+                    "name": "cpu-stressor",
+                    "ns": "app"
+                }
+            }
+        }
+    ]
+}

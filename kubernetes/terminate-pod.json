@@ -1,0 +1,42 @@
+{
+    "title": "Terminate random pods",
+    "description": "We expect Kubernetes to handle the situation gracefully when a pod goes down",
+    "tags": [
+        "kubernetes"
+    ],
+    "steady-state-hypothesis": {
+        "title": "Verifying node is healthy",
+        "probes": [
+            {
+                "name": "nodes-must-be-healthy",
+                "type": "probe",
+                "tolerance": true,
+                "provider": {
+                    "type": "python",
+                    "module": "chaosk8s.node.probes",
+                    "func": "nodes_must_be_healthy"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "terminate-random-pods",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.pod.actions",
+                "func": "terminate_pods",
+                "arguments": {
+                    "mode": "fixed",
+                    "qty": 3,
+                    "rand": true,
+                    "ns": "app"
+                }
+            },
+            "pauses": {
+                "after": 5
+            }
+        }
+    ]
+}

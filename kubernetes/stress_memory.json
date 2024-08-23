@@ -1,0 +1,60 @@
+{
+    "title": "Stress Memory",
+    "description": "We expect Kubernetes to handle the situation gracefully when some pods are under memory pressure",
+    "tags": [
+        "kubernetes"
+    ],
+    "steady-state-hypothesis": {
+        "title": "Verifying node is healthy",
+        "probes": [
+            {
+                "name": "nodes-must-be-healthy",
+                "type": "probe",
+                "tolerance": true,
+                "provider": {
+                    "type": "python",
+                    "module": "chaosk8s.node.probes",
+                    "func": "nodes_must_be_healthy"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "stress-memory",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.chaosmesh.stress.actions",
+                "func": "stress_memory",
+                "arguments": {
+                    "name": "memory-stressor",
+                    "ns": "app",
+                    "mode": "fixed-percent",
+                    "mode_value": "30",
+                    "duration": "1m",
+                    "workers": 4,
+                    "size": "500MB"
+                }
+            },
+            "pauses": {
+                "after": 60
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "name": "delete-stressor",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.chaosmesh.stress.actions",
+                "func": "delete_stressor",
+                "arguments": {
+                    "name": "memory-stressor",
+                    "ns": "app"
+                }
+            }
+        }
+    ]
+}
