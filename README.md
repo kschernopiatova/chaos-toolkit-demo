@@ -19,7 +19,7 @@ Run specific chaos-toolkit experiment
 chaos run path/to/experiment
 ```
 
-To run experimants connected to kubernetes network, cpu and memory faults, you need to install chaos mesh to your kubernetes cluster and expose it with Ingress
+To run experiments connected to kubernetes network, cpu and memory faults, you need to install chaos mesh to your kubernetes cluster and expose it with Ingress
 
 [https://chaos-mesh.org/docs/quick-start/](https://)
 
