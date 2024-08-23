@@ -1,0 +1,51 @@
+{
+    "title": "Stop vercel project",
+    "description": "Stop vercel project",
+    "method": [
+        {
+            "type": "action",
+            "name": "stop-vercel",
+            "provider": {
+                "type": "http",
+                "method": "POST",
+                "expected_status": 200,
+                "url": "https://api.vercel.com/v1/projects/$projectId/pause",
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer $token"
+                },
+                "arguments": {
+                    "slug": "slug",
+                    "teamId": "$teamId"
+                }
+            }
+        }
+    ],
+    "secrets": {
+        "global": {
+            "token": "",
+            "teamId": "",
+            "projectId": ""
+        }
+    },
+    "rollbacks": [
+        {
+            "type": "action",
+            "name": "stop-vercel",
+            "provider": {
+                "type": "http",
+                "method": "POST",
+                "expected_status": 200,
+                "url": "https://api.vercel.com/v1/projects/$projectId/unpause",
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer $token"
+                },
+                "arguments": {
+                    "slug": "slug",
+                    "teamId": "$teamId"
+                }
+            }
+        }
+    ]
+}
