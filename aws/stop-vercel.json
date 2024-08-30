@@ -18,6 +18,9 @@
                     "slug": "slug",
                     "teamId": "$teamId"
                 }
+            },
+            "pauses": {
+                "after": 60
             }
         }
     ],

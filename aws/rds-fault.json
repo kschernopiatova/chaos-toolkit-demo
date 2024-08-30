@@ -5,21 +5,22 @@
         "aws"
     ],
     "configuration": {
-        "aws_region": "us-east-1"
+        "aws_region": "us-east-1",
+        "aws_profile_name": "solvd_main_aws"
     },
     "steady-state-hypothesis": {
-        "title": "Check cluster status",
+        "title": "Check instance status",
         "probes": [
             {
-                "name": "cluster-status",
+                "name": "instance-status",
                 "type": "probe",
-                "tolerance": "ready",
+                "tolerance": "available",
                 "provider": {
                     "type": "python",
                     "module": "chaosaws.rds.probes",
-                    "func": "cluster_status",
+                    "func": "instance_status",
                     "arguments": {
-                        "cluster_id": "$db_cluster_identifier"
+                        "instance_id": "$instance_id"
                     }
                 }
             }
@@ -27,18 +28,18 @@
     },
     "method": [
         {
-            "name": "stop-db-cluster",
+            "name": "stop-db-instance",
             "type": "action",
             "provider": {
                 "type": "python",
                 "module": "chaosaws.rds.actions",
-                "func": "stop_db_cluster",
+              "func": "stop_db_instance",
                 "arguments": {
-                    "db_cluster_identifier": "$db_cluster_identifier"
+                "db_instance_identifier": "$instance_id"
                 }
             },
             "pauses": {
-                "after": 5
+                "after": 30
             }
         }
     ]
