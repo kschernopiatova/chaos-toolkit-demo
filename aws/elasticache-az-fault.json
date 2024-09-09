@@ -1,0 +1,58 @@
+{
+    "title": "Stop rds cluster",
+    "description": "Check the state when elasticache failover after AZ fail",
+    "tags": [
+        "aws"
+    ],
+    "configuration": {
+        "aws_region": "us-east-1",
+        "aws_profile_name": "solvd_main_aws"
+    },
+    "steady-state-hypothesis": {
+        "title": "Check instance status",
+        "probes": [
+            {
+                "name": "get-cache-node-status",
+                "type": "probe",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.elasticache.probes",
+                    "func": "get_cache_node_status",
+                    "arguments": {
+                        "cluster_id": "$cluster_id"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "Fail AZ",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "azchaosaws.elasticache.actions",
+                "func": "fail_az",
+                "arguments": {
+                    "db_instance_identifier": "env-test-solvd-poc",
+                    "az": "us-east-1a",
+                    "dry_run": false
+                }
+            },
+            "pauses": {
+                "after": 30
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "name": "Recover AZ",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "azchaosaws.eks.actions",
+                "func": "recover_az"
+            }
+        }
+    ]
+}

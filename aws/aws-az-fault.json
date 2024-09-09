@@ -1,0 +1,130 @@
+{
+    "title": "Drain eks node",
+    "description": "Check the state after eks node is drained",
+    "tags": [
+        "aws",
+        "kubernetes"
+    ],
+    "configuration": {
+        "aws_region": "us-east-1",
+        "aws_profile_name": "solvd_main_aws"
+    },
+    "steady-state-hypothesis": {
+        "title": "Verifying node is healthy",
+        "probes": [
+            {
+                "name": "nodes-must-be-healthy",
+                "type": "probe",
+                "tolerance": true,
+                "provider": {
+                    "type": "python",
+                    "module": "chaosk8s.node.probes",
+                    "func": "nodes_must_be_healthy"
+                }
+            },
+            {
+                "name": "get-cache-node-status",
+                "type": "probe",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.elasticache.probes",
+                    "func": "get_cache_node_status",
+                    "arguments": {
+                        "cluster_id": "$cluster_id"
+                    }
+                }
+            },
+            {
+                "name": "instance-status",
+                "type": "probe",
+                "tolerance": "available",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.rds.probes",
+                    "func": "instance_status",
+                    "arguments": {
+                        "instance_id": "env-test-solvd-poc"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "list-nodes",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.node.probes",
+                "func": "get_nodes",
+                "arguments": {
+                    "label_selector": "topology.kubernetes.io/zone=us-east-1a"
+                }
+            }
+        },
+        {
+            "name": "drain-nodes",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.node.actions",
+                "func": "drain_nodes",
+                "arguments": {
+                    "label_selector": "topology.kubernetes.io/zone=us-east-1a"
+                }
+            }
+        },
+        {
+            "name": "Fail AZ Elasticache",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "azchaosaws.elasticache.actions",
+                "func": "fail_az",
+                "arguments": {
+                    "az": "us-east-1a",
+                    "dry_run": false
+                }
+            }
+        },
+        {
+            "name": "Fail AZ RDS",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "azchaosaws.rds.actions",
+                "func": "fail_az",
+                "arguments": {
+                    "az": "us-east-1a",
+                    "dry_run": false
+                }
+            },
+            "pauses": {
+                "after": 90
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "name": "uncordon-node",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "chaosk8s.node.actions",
+                "func": "uncordon_node",
+                "arguments": {
+                    "label_selector": "topology.kubernetes.io/zone=us-east-1a"
+                }
+            }
+        },
+        {
+            "name": "Recover AZ",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "azchaosaws.eks.actions",
+                "func": "recover_az"
+            }
+        }
+    ]
+}

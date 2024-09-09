@@ -1,0 +1,58 @@
+{
+    "title": "Stop rds cluster",
+    "description": "Check the state when RDS failover after AZ fail",
+    "tags": [
+        "aws"
+    ],
+    "configuration": {
+        "aws_region": "us-east-1",
+        "aws_profile_name": "solvd_main_aws"
+    },
+    "steady-state-hypothesis": {
+        "title": "Check instance status",
+        "probes": [
+            {
+                "name": "instance-status",
+                "type": "probe",
+                "tolerance": "available",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.rds.probes",
+                    "func": "instance_status",
+                    "arguments": {
+                        "instance_id": "env-test-solvd-poc"
+                    }
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "name": "Fail AZ",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "azchaosaws.rds.actions",
+                "func": "fail_az",
+                "arguments": {
+                    "az": "us-east-1a",
+                    "dry_run": false
+                }
+            },
+            "pauses": {
+                "after": 30
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "name": "Recover AZ",
+            "type": "action",
+            "provider": {
+                "type": "python",
+                "module": "azchaosaws.eks.actions",
+                "func": "recover_az"
+            }
+        }
+    ]
+}
