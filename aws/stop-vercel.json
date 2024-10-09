@@ -1,6 +1,29 @@
 {
     "title": "Stop vercel project",
     "description": "Stop vercel project",
+    "secrets": {
+        "global": {
+            "token": "",
+            "teamId": "",
+            "projectId": ""
+        }
+    },
+    "steady-state-hypothesis": {
+        "title": "Verifying vercel deployment is accessible",
+        "probes": [
+            {
+                "name": "vercel-is-accessible",
+                "type": "probe",
+                "tolerance": 200,
+                "provider": {
+                    "type": "http",
+                    "method": "GET",
+                    "expected_status": 200,
+                    "url": "$vercel_project_url"
+                }
+            }
+        ]
+    },
     "method": [
         {
             "type": "action",
@@ -24,13 +47,6 @@
             }
         }
     ],
-    "secrets": {
-        "global": {
-            "token": "",
-            "teamId": "",
-            "projectId": ""
-        }
-    },
     "rollbacks": [
         {
             "type": "action",

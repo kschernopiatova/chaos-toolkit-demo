@@ -21,6 +21,19 @@
                     "module": "chaosk8s.node.probes",
                     "func": "nodes_must_be_healthy"
                 }
+            },
+            {
+                "name": "instance-status",
+                "type": "probe",
+                "tolerance": "available",
+                "provider": {
+                    "type": "python",
+                    "module": "chaosaws.rds.probes",
+                    "func": "instance_status",
+                    "arguments": {
+                        "instance_id": "env-test-solvd-poc"
+                    }
+                }
             }
         ]
     },
@@ -29,12 +42,12 @@
             "name": "stop-db-instance",
             "type": "action",
             "provider": {
-              "type": "python",
-              "module": "chaosaws.rds.actions",
-              "func": "stop_db_instance",
-              "arguments": {
-                "db_instance_identifier": "$instance_id"
-              }
+                "type": "python",
+                "module": "chaosaws.rds.actions",
+                "func": "stop_db_instance",
+                "arguments": {
+                    "db_instance_identifier": "$instance_id"
+                }
             }
         },
         {

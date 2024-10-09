@@ -33,9 +33,9 @@
             "provider": {
                 "type": "python",
                 "module": "chaosaws.rds.actions",
-              "func": "stop_db_instance",
+                "func": "stop_db_instance",
                 "arguments": {
-                "db_instance_identifier": "$instance_id"
+                    "db_instance_identifier": "$instance_id"
                 }
             },
             "pauses": {

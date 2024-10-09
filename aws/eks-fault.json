@@ -33,7 +33,7 @@
                 "module": "chaosk8s.node.actions",
                 "func": "drain_nodes",
                 "arguments": {
-                    "name": "$node_name"
+                    "label_selector": "topology.kubernetes.io/zone=us-east-1a"
                 }
             },
             "pauses": {
@@ -50,7 +50,7 @@
                 "module": "chaosk8s.node.actions",
                 "func": "uncordon_node",
                 "arguments": {
-                    "name": "$node_name"
+                    "label_selector": "topology.kubernetes.io/zone=us-east-1a"
                 }
             }
         }
